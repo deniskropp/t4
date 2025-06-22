@@ -4,23 +4,30 @@ from colorama import Fore, Style
 AGENT_COLORS = {
     "Designer": Fore.CYAN,
     "Engineer": Fore.GREEN,
-    "PromptDev": Fore.MAGENTA
+    "PromptDev": Fore.MAGENTA,
+    "Analyzer": Fore.LIGHTBLUE_EX,
+    "Refactorer": Fore.LIGHTGREEN_EX,
+    "Documenter": Fore.LIGHTYELLOW_EX,
+    "Reviewer": Fore.LIGHTMAGENTA_EX,
+    "Deployer": Fore.LIGHTWHITE_EX
 }
 AGENT_ROUND_COLOR = Fore.LIGHTRED_EX
 LABEL_COLOR = Fore.YELLOW
 
 class Agent:
-    """Represents an agent with a name, model, and persona."""
+    """Represents an agent with a name, model, persona, and optional phase-specific behavior."""
     def __init__(self, name, model, persona):
         self.name = name
         self.model = model
         self.persona = persona
 
-    def generate_response(self, system_prompt, session_prompt, canvas):
+    def generate_response(self, system_prompt, session_prompt, canvas, phase=None):
         color = AGENT_COLORS.get(self.name, Fore.WHITE)
         print(f"\n\n{AGENT_ROUND_COLOR}--- {self.name} is thinking ---{Style.RESET_ALL}")
+        # Optionally, phase-specific instructions can be added to the prompt
+        phase_instruction = f"\nCurrent Phase: {phase.capitalize()}" if phase else ""
         messages = [
-            {"role": "system", "content": f"System Prompt:\n{system_prompt}\n\n"},
+            {"role": "system", "content": f"System Prompt:\n{system_prompt}{phase_instruction}\n\n"},
             {"role": "user", "content": f"Session Prompt:\n{session_prompt}\n\n"},
             {"role": "user", "content": f"Shared Canvas:\n{canvas}\n\n"},
             {"role": "user", "content": f"Your persona: {self.persona}\n"}
