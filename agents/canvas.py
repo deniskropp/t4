@@ -1,9 +1,10 @@
-import ollama
 from colorama import Fore, Style
-from .extractors import extract_updated_canvas
+from agents.chatmodel import ChatModelFactory, HFStreamingChatModel, OllamaStreamingChatModel
+from agents.extractors import extract_updated_canvas
 
 CANVAS_ROUND_COLOR = Fore.LIGHTMAGENTA_EX
 
+factory = ChatModelFactory()
 
 def aggregate_contribution(session_prompt, canvas, contribution, model):
     """
@@ -24,8 +25,9 @@ def aggregate_contribution(session_prompt, canvas, contribution, model):
     print(f"\n{Fore.MAGENTA}New Contribution:{Style.RESET_ALL}\n{contribution}\n")
     full_response = ""
     print(f"\n{Fore.LIGHTGREEN_EX}Aggregator (streaming):{Style.RESET_ALL}")
-    stream = ollama.chat(
-        model=model,
+    chat_model = factory.get(model=model)
+    stream = chat_model.chat(
+        #model=model,
         messages=messages,
         stream=True,
     )

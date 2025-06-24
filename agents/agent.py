@@ -1,5 +1,5 @@
-import ollama
 from colorama import Fore, Style
+from agents.chatmodel import ChatModelFactory
 
 AGENT_COLORS = {
     "Designer": Fore.CYAN,
@@ -14,12 +14,13 @@ AGENT_COLORS = {
 AGENT_ROUND_COLOR = Fore.LIGHTRED_EX
 LABEL_COLOR = Fore.YELLOW
 
+
 class Agent:
     """Represents an agent with a name, model, persona, and optional phase-specific behavior."""
-    def __init__(self, name, model, persona):
+    def __init__(self, name, model, persona, chat_model=None):
         self.name = name
-        self.model = model
         self.persona = persona
+        self.factory = ChatModelFactory(model=model, chat_model=chat_model)
 
     def generate_response(self, system_prompt, session_prompt, canvas, phase=None):
         color = AGENT_COLORS.get(self.name, Fore.WHITE)
@@ -30,7 +31,7 @@ class Agent:
             {"role": "system", "content": f"System Prompt:\n{system_prompt}{phase_instruction}\n\n"},
             {"role": "user", "content": f"Session Prompt:\n{session_prompt}\n\n"},
             {"role": "user", "content": f"Shared Canvas:\n{canvas}\n\n"},
-            {"role": "user", "content": f"Your persona: {self.persona}\n"}
+            {"role": "user", "content": f"Your persona: {self.persona}\n/no_think\n"}
         ]
         for msg in messages:
             label, _, content = msg['content'].partition(':')
@@ -38,8 +39,9 @@ class Agent:
             print("  ...." * 10)
         full_response = ""
         print(f"\n{color}{self.name} contributing (streaming):{Style.RESET_ALL}")
-        stream = ollama.chat(
-            model=self.model,
+        chat_model = self.factory.get()
+        stream = chat_model.chat(
+#            model=self.model,
             messages=messages,
             stream=True,
         )

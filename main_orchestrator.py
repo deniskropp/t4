@@ -11,7 +11,8 @@ init(autoreset=True)
 
 logger = setup_jsonl_logger(level=logging.INFO)
 
-MODEL = 'gemma3:4b'  # Placeholder model name
+#MODEL = 'meta-llama/Llama-4-Scout-17B-16E-Instruct'#'deepcoder:14b'
+MODEL = 'ollama:jan-nano'
 
 # Define agent roles for each phase
 def get_agents_for_phase(phase):
