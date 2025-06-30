@@ -93,11 +93,15 @@ class HFStreamingChatModel(StreamingChatModel):
 class GeminiStreamingChatModel(StreamingChatModel):
     """Gemini API implementation of the StreamingChatModel."""
     def __init__(self, model=None, api_key=None):
-        self.model = model or "gemini-pro"
+        self.model = model or "gemini-2.5-flash-lite-preview-06-17"
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
         self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:streamGenerateContent"
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY environment variable must be set or api_key provided.")
+        self.client = GenerativeLanguageServiceClient()
+        self.models = self.client.models.list(config={'page_size': 50, 'query_base': True}).page
+        #for m in self.models:
+        #    print(f"\n\nAvailable Gemini model: {m}\n")
 
     def chat(self, model=None, messages=None, stream=True):
         if model is None:
@@ -112,11 +116,10 @@ class GeminiStreamingChatModel(StreamingChatModel):
                 raise ValueError("Each message must be a dict with 'role' and 'content' keys.")
 
         # Prepare the request payload
-        x2 = [f"{msg['content']}\n\n\n" for msg in messages]
+        contents = [f"{msg['content']}\n\n\n" for msg in messages]
 
         # Create a client and stream the response
-        client = GenerativeLanguageServiceClient()
-        response = client.models.generate_content_stream(model=model, contents=x2)
+        response = self.client.models.generate_content_stream(model=model, contents=contents)
 
         # Yield each chunk of the response
         for chunk in response:
@@ -127,8 +130,7 @@ class GeminiStreamingChatModel(StreamingChatModel):
 
     def list_models(self):
         # Gemini API does not provide a public model listing endpoint; return common models
-        return ["gemini-pro", "gemini-1.5-pro", "gemini-1.5-flash"]
-
+        return [m.name for m in self.models]
 
 class ChatModelFactory:
     """Factory class to initialize the appropriate chat model."""
@@ -150,7 +152,7 @@ class ChatModelFactory:
                 self.model = model.split(':', 1)[1]
                 self.chat_model = HFStreamingChatModel(self.model)
             elif model.startswith("gemini"):
-                self.model = model.split(':', 1)[1] if ':' in model else "gemini-2.5-flash"
+                self.model = model.split(':', 1)[1] if ':' in model else None
                 self.chat_model = GeminiStreamingChatModel(self.model)
             else:
                 raise ValueError(f"Unknown model provider for model: '{model}'")
