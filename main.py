@@ -1,7 +1,7 @@
 import logging
 from agents.agent import Agent
 from agents.extractors import extract_revised_system_prompt
-from agents.canvas import aggregate_contribution
+from agents.canvas import Canvas
 from agents.logging_utils import setup_jsonl_logger
 from colorama import Fore, Style, init
 
@@ -14,7 +14,8 @@ ROUND_COLOR = Fore.RED
 # Set up JSONL logger
 logger = setup_jsonl_logger(level=logging.INFO)
 
-MODEL = 'gemma3:4b'  # Placeholder model name
+#MODEL = 'gemma3:4b'
+MODEL = 'gemini:gemini-2.0-flash-lite'
 
 designer = Agent(
     name="Designer",
@@ -39,8 +40,8 @@ session_prompt = (
     "This is a collaborative multi-agent design session. Each agent will add to or modify the shared canvas below. "
     "PromptDev will update the system prompt as needed to keep the team aligned."
 )
-canvas = ""
-num_rounds = 20
+canvas = Canvas("")
+num_rounds = 1
 
 logger.info("=== Multi-Agent Web Design Collaboration Prototype ===")
 logger.info(f"Initial System Prompt: {system_prompt}")
@@ -58,7 +59,7 @@ for round_num in range(1, num_rounds + 1):
             system_prompt = extract_revised_system_prompt(contribution)
             logger.info(f"System prompt updated by PromptDev.")
         else:
-            canvas = aggregate_contribution(session_prompt, canvas, contribution, MODEL)
+            canvas.aggregate_contribution(contribution, MODEL)
             logger.info(f"Canvas updated by {agent.name}.")
     logger.info("-" * 40)
 

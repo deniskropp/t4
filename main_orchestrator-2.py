@@ -8,7 +8,7 @@ import os
 from typing import List, Dict, Any
 
 from agents.agent import Agent
-from agents.canvas import aggregate_contribution
+from agents.canvas import Canvas
 from agents.extractors import extract_revised_system_prompt, extract_updated_canvas
 from agents.logging_utils import setup_jsonl_logger as setup_logging
 
@@ -107,7 +107,7 @@ def main():
         agents: List[Agent] = []
         for config in agent_configs:
             # Assuming Agent class takes name, persona, and role
-            agents.append(Agent(name=config["name"], persona=config["persona"], role=config["role"]))
+            agents.append(Agent(name=config["name"], model=None, persona=config["persona"], role=config["role"]))
         logger.info(f"Initialized {len(agents)} agents for phase: {phase}")
 
         # Prepare prompts for the current phase
@@ -123,7 +123,7 @@ def main():
             contribution = agent.generate_response(
                 system_prompt=system_prompt,
                 session_prompt=session_prompt_template.format(initial_code=canvas.get_content(), phase=phase, role=agent.role),
-                canvas=canvas.get_content(), # Pass current canvas content
+                canvas="\n\n\n".join(phase_contributions), # Pass current canvas content
                 phase=phase # Pass the current phase
             )
             phase_contributions.append(contribution)
@@ -132,7 +132,7 @@ def main():
         # Aggregate contributions for the phase
         logger.info(f"Aggregating contributions for phase: {phase}")
         # The Canvas class handles the aggregation logic using an LLM
-        canvas.aggregate_contributions(phase_contributions)
+        canvas.aggregate_contribution(contribution="\n\n\n".join(phase_contributions))  # Replace None with actual model if needed
         logger.info(f"Canvas updated after phase: {phase}")
 
         # Optional: Save canvas state after each phase
