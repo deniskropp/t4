@@ -17,18 +17,22 @@ LABEL_COLOR = Fore.YELLOW
 
 class Agent:
     """Represents an agent with a name, model, persona, and optional phase-specific behavior."""
-    def __init__(self, name, model, persona, chat_model=None):
+    def __init__(self, name, model, persona, role=None, chat_model=None):
         self.name = name
         self.persona = persona
+        self.role = role  # e.g., 'analysis', 'refactor', 'test', etc.
         self.factory = ChatModelFactory(model=model, chat_model=chat_model)
 
-    def generate_response(self, system_prompt, session_prompt, canvas, phase=None):
+    def generate_response(self, system_prompt, session_prompt, canvas, phase=None, extra_context=None):
         color = AGENT_COLORS.get(self.name, Fore.WHITE)
         print(f"\n\n{AGENT_ROUND_COLOR}--- {self.name} is thinking ---{Style.RESET_ALL}")
-        # Optionally, phase-specific instructions can be added to the prompt
+        # Phase- and role-specific instructions
         phase_instruction = f"\nCurrent Phase: {phase.capitalize()}" if phase else ""
+        role_instruction = f"\nAgent Role: {self.role}" if self.role else ""
+        # Optionally, add extra context (e.g., analysis findings, diffs, etc.)
+        extra = f"\nExtra Context: {extra_context}" if extra_context else ""
         messages = [
-            {"role": "system", "content": f"System Prompt:\n{system_prompt}{phase_instruction}\n\n"},
+            {"role": "system", "content": f"System Prompt:\n{system_prompt}{phase_instruction}{role_instruction}{extra}\n\n"},
             {"role": "user", "content": f"Session Prompt:\n{session_prompt}\n\n"},
             {"role": "user", "content": f"Shared Canvas:\n{canvas}\n\n"},
             {"role": "user", "content": f"Your persona: {self.persona}\n/no_think\n"}
