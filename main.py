@@ -30,7 +30,7 @@ engineer = Agent(
 prompt_dev = Agent(
     name="PromptDev",
     model=MODEL,
-    persona="Prompt Engineer: Observe the collaboration and refine the system prompt to keep the team aligned and effective."
+    persona="Prompt Engineer: Observe the collaboration and refine the system prompt to keep the team aligned and effective. Output new system prompt only."
 )
 
 agents = [designer, engineer, prompt_dev]
@@ -41,7 +41,7 @@ session_prompt = (
     "PromptDev will update the system prompt as needed to keep the team aligned."
 )
 canvas = Canvas("")
-num_rounds = 1
+num_rounds = 2
 
 logger.info("=== Multi-Agent Web Design Collaboration Prototype ===")
 logger.info(f"Initial System Prompt: {system_prompt}")
