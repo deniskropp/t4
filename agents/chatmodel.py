@@ -150,7 +150,7 @@ class ChatModelFactory:
                 self.model = model.split(':', 1)[1]
                 self.chat_model = HFStreamingChatModel(self.model)
             elif model.startswith("gemini"):
-                self.model = model.split(':', 1)[1] if ':' in model else "gemini-pro"
+                self.model = model.split(':', 1)[1] if ':' in model else "gemini-2.5-flash"
                 self.chat_model = GeminiStreamingChatModel(self.model)
             else:
                 raise ValueError(f"Unknown model provider for model: '{model}'")
