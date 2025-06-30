@@ -2,7 +2,8 @@ import ollama
 import os
 from abc import ABC, abstractmethod
 from huggingface_hub import InferenceClient, HfApi
-
+# Gemini API imports
+from google.genai import Client as GenerativeLanguageServiceClient, types
 
 class StreamingChatModel(ABC):
     """Abstract base class for streaming chat models."""
@@ -89,6 +90,46 @@ class HFStreamingChatModel(StreamingChatModel):
         return [m.id for m in models]
 
 
+class GeminiStreamingChatModel(StreamingChatModel):
+    """Gemini API implementation of the StreamingChatModel."""
+    def __init__(self, model=None, api_key=None):
+        self.model = model or "gemini-pro"
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+        self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:streamGenerateContent"
+        if not self.api_key:
+            raise ValueError("GEMINI_API_KEY environment variable must be set or api_key provided.")
+
+    def chat(self, model=None, messages=None, stream=True):
+        if model is None:
+            model = self.model
+
+        if not messages or not isinstance(messages, list):
+            raise ValueError("Messages must be a non-empty list.")
+
+        # Ensure messages are in the correct format for Gemini
+        for msg in messages:
+            if not isinstance(msg, dict) or 'role' not in msg or 'content' not in msg:
+                raise ValueError("Each message must be a dict with 'role' and 'content' keys.")
+
+        # Prepare the request payload
+        x2 = [msg["content"] for msg in messages]
+
+        # Create a client and stream the response
+        client = GenerativeLanguageServiceClient()
+        response = client.models.generate_content_stream(model=model, contents=x2)
+
+        # Yield each chunk of the response
+        for chunk in response:
+            if (chunk.candidates and chunk.candidates[0].content and
+                    chunk.candidates[0].content.parts):
+                #print(chunk.candidates[0].content.parts[0].text)
+                yield {"message": {"content": chunk.candidates[0].content.parts[0].text}}
+
+    def list_models(self):
+        # Gemini API does not provide a public model listing endpoint; return common models
+        return ["gemini-pro", "gemini-1.5-pro", "gemini-1.5-flash"]
+
+
 class ChatModelFactory:
     """Factory class to initialize the appropriate chat model."""
     def __init__(self, chat_model=None, model=None):
@@ -108,6 +149,9 @@ class ChatModelFactory:
             elif model.startswith("hf") or model.startswith("huggingface"):
                 self.model = model.split(':', 1)[1]
                 self.chat_model = HFStreamingChatModel(self.model)
+            elif model.startswith("gemini"):
+                self.model = model.split(':', 1)[1] if ':' in model else "gemini-pro"
+                self.chat_model = GeminiStreamingChatModel(self.model)
             else:
                 raise ValueError(f"Unknown model provider for model: '{model}'")
 
