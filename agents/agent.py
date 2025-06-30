@@ -35,7 +35,7 @@ class Agent:
             {"role": "system", "content": f"System Prompt:\n{system_prompt}{phase_instruction}{role_instruction}{extra}\n\n"},
             {"role": "user", "content": f"Session Prompt:\n{session_prompt}\n\n"},
             {"role": "user", "content": f"Shared Canvas:\n{canvas}\n\n"},
-            {"role": "user", "content": f"Your persona: {self.persona}\n/no_think\n"}
+            {"role": "user", "content": f"Your persona: {self.persona}\n"}
         ]
         for msg in messages:
             label, _, content = msg['content'].partition(':')
