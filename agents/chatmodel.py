@@ -112,7 +112,7 @@ class GeminiStreamingChatModel(StreamingChatModel):
                 raise ValueError("Each message must be a dict with 'role' and 'content' keys.")
 
         # Prepare the request payload
-        x2 = [msg["content"] for msg in messages]
+        x2 = [f"{msg['content']}\n\n\n" for msg in messages]
 
         # Create a client and stream the response
         client = GenerativeLanguageServiceClient()
