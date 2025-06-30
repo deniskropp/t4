@@ -14,8 +14,8 @@ ROUND_COLOR = Fore.RED
 # Set up JSONL logger
 logger = setup_jsonl_logger(level=logging.INFO)
 
-#MODEL = 'gemma3:4b'
-MODEL = 'gemini:gemini-2.0-flash-lite'
+#MODEL = 'ollama:gemma3:4b'
+MODEL = 'gemini'
 
 designer = Agent(
     name="Designer",
@@ -41,28 +41,28 @@ session_prompt = (
     "PromptDev will update the system prompt as needed to keep the team aligned."
 )
 canvas = Canvas("")
-num_rounds = 2
+num_rounds = 5
 
-logger.info("=== Multi-Agent Web Design Collaboration Prototype ===")
-logger.info(f"Initial System Prompt: {system_prompt}")
-logger.info(f"Initial Session Prompt: {session_prompt}")
-logger.info(f"Initial Shared Canvas: {canvas}")
-logger.info("=" * 60)
+print("=== Multi-Agent Web Design Collaboration Prototype ===")
+print(f"Initial System Prompt: {system_prompt}")
+print(f"Initial Session Prompt: {session_prompt}")
+print(f"Initial Shared Canvas: {canvas}")
+print("=" * 60)
 
 for round_num in range(1, num_rounds + 1):
-    logger.info(f"+++ --- Round {round_num} --- +++")
+    print(f"+++ --- Round {round_num} --- +++")
     for agent in agents:
-        logger.info(f"Agent {agent.name} is generating a response.")
+        print(f"Agent {agent.name} is generating a response.")
         contribution = agent.generate_response(system_prompt, session_prompt, canvas)
         logger.debug(f"Contribution from {agent.name}: {contribution}")
         if agent.name == "PromptDev":
             system_prompt = extract_revised_system_prompt(contribution)
-            logger.info(f"System prompt updated by PromptDev.")
+            print(f"System prompt updated by PromptDev.")
         else:
             canvas.aggregate_contribution(contribution, MODEL)
-            logger.info(f"Canvas updated by {agent.name}.")
-    logger.info("-" * 40)
+            print(f"Canvas updated by {agent.name}.")
+    print("-" * 40)
 
-logger.info("=== Simulation Complete ===")
-logger.info(f"Final Shared Canvas: {canvas}")
-logger.info(f"Final System Prompt: {system_prompt}")
+print(f"\n\n{Fore.RED}=== Simulation Complete ===\n{Style.RESET_ALL}")
+print(f"{Fore.BLUE}Final Shared Canvas:\n{canvas}\n{Style.RESET_ALL}")
+print(f"{Fore.GREEN}Final System Prompt:\n{system_prompt}\n{Style.RESET_ALL}")
