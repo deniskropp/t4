@@ -85,10 +85,11 @@ for phase in phases:
         # Prepare extra context for future extensibility (e.g., analysis findings, diffs)
         extra_context = None
         contribution = agent.generate_response(system_prompt, session_prompt, canvas, phase=phase, extra_context=extra_context)
-        logger.debug(f"Contribution from {agent.name}: {contribution}")
+        #canvas.update(contribution)
+        #logger.debug(f"Contribution from {agent.name}: {contribution}")
         # For demonstration, always update the canvas
         canvas.aggregate_contribution(contribution, MODEL)
-        print(f"Canvas updated by {agent.name}.")
+        #print(f"Canvas updated by {agent.name}.")
     print("-" * 40)
 
 print("=== Code Improvement Complete ===")
